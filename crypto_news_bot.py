@@ -4,26 +4,31 @@ import pytz
 import os
 
 def get_crypto_news():
-    api_token = os.environ["CRYPTOPANIC_TOKEN"]
-    url = f"https://cryptopanic.com/api/v1/posts/?auth_token={api_token}&public=true"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; CryptoNewsBot/1.0; +https://github.com/yourusername)"
-    }
-    print(f"Fetching news from: {url}")
-    resp = requests.get(url, headers=headers)
+    url = "https://api.coingecko.com/api/v3/status_updates"
+    resp = requests.get(url)
     print(f"Status Code: {resp.status_code}")
     print(f"Response Snippet: {resp.text[:200]}")
+
     data = resp.json()
-    headlines = [f"- {post['title']}" for post in data.get("results", [])[:5]]
-    return "\n".join(headlines)
+    updates = data.get("status_updates", [])[:5]
 
+    if not updates:
+        return "No recent crypto news found."
 
+    headlines = []
+    for update in updates:
+        project = update.get("project", {}).get("name", "Unknown Project")
+        title = update.get("title", "").strip()
+        description = update.get("description", "").strip()
+        headlines.append(f"🔹 *{project}* – {title}\n{description}")
+
+    return "\n\n".join(headlines)
 
 def send_telegram_message(message):
     token = os.environ["TELEGRAM_TOKEN"]
     chat_id = os.environ["TELEGRAM_CHAT_ID"]
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": message}
+    payload = {"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}
     requests.post(url, data=payload)
 
 def main():
