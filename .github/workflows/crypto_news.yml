@@ -19,7 +19,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: pip install requests pytz openai>=1.0.0
+        run: pip install 'openai>=1.2.0' request pytz
 
       - name: Run GPT-powered crypto news bot
         env:
