@@ -2,8 +2,8 @@ name: Daily Crypto News
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # Runs every day at 08:00 UTC = 10:00 Swiss time
-  workflow_dispatch:      # Allows manual run from GitHub UI
+    - cron: '0 8 * * *'  # 08:00 UTC = 10:00 Swiss time
+  workflow_dispatch:
 
 jobs:
   send-news:
