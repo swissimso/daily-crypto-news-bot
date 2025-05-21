@@ -18,19 +18,24 @@ def fetch_fear_and_greed():
     return f"{index.get('value_classification')} ({index.get('value')})"
 
 def summon_openai_summary(trending, fear_greed):
-    openai.api_key = os.environ["OPENAI_API_KEY"]
+    from openai import OpenAI
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
     prompt = (
-        f"Summarize the current crypto market in a brief daily update."
-        f" The Fear and Greed index is {fear_greed}."
-        f" Trending coins are: {', '.join(trending)}."
-        f" Respond in an informative, professional tone."
+        f"Summarize the current crypto market in a brief daily update. "
+        f"The Fear and Greed index is {fear_greed}. "
+        f"Trending coins are: {', '.join(trending)}. "
+        f"Respond in an informative, professional tone."
     )
-    response = openai.ChatCompletion.create(
+
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=200
     )
-    return response["choices"][0]["message"]["content"].strip()
+
+    return response.choices[0].message.content.strip()
+
 
 def send_telegram_message(message):
     token = os.environ["TELEGRAM_TOKEN"]
