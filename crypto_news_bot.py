@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 import pytz
 import os
-import openai
+from openai import OpenAI
 
 def fetch_trending_coins():
     url = "https://api.coingecko.com/api/v3/search/trending"
@@ -18,7 +18,6 @@ def fetch_fear_and_greed():
     return f"{index.get('value_classification')} ({index.get('value')})"
 
 def summon_openai_summary(trending, fear_greed):
-    from openai import OpenAI
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
     prompt = (
@@ -28,16 +27,13 @@ def summon_openai_summary(trending, fear_greed):
         f"Respond in an informative, professional tone."
     )
 
-response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[{"role": "user", "content": prompt}],
-    max_tokens=200
-)
-
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=200
+    )
 
     return response.choices[0].message.content.strip()
-
-
 
 def send_telegram_message(message):
     token = os.environ["TELEGRAM_TOKEN"]
