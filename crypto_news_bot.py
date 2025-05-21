@@ -28,11 +28,12 @@ def summon_openai_summary(trending, fear_greed):
         f"Respond in an informative, professional tone."
     )
 
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=200
-    )
+response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=200
+)
+
 
     return response.choices[0].message.content.strip()
 
