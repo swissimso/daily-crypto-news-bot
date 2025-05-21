@@ -37,6 +37,7 @@ def summon_openai_summary(trending, fear_greed):
     return response.choices[0].message.content.strip()
 
 
+
 def send_telegram_message(message):
     token = os.environ["TELEGRAM_TOKEN"]
     chat_id = os.environ["TELEGRAM_CHAT_ID"]
