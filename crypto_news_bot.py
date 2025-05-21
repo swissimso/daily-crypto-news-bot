@@ -4,7 +4,8 @@ import pytz
 import os
 
 def get_crypto_news():
-    url = "https://cryptopanic.com/api/v1/posts/?auth_token=" + os.environ["CRYPTOPANIC_TOKEN"] + "&public=true"
+    api_token = os.environ["CRYPTOPANIC_TOKEN"]
+    url = f"https://cryptopanic.com/api/v1/posts/?auth_token={api_token}&public=true"
     resp = requests.get(url)
     data = resp.json()
     headlines = [f"- {post['title']}" for post in data.get("results", [])[:5]]
