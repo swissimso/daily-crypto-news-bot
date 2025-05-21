@@ -2,40 +2,54 @@ import requests
 from datetime import datetime
 import pytz
 import os
+import openai
 
-def get_crypto_news():
-    url = "https://api.coingecko.com/api/v3/status_updates"
+def fetch_trending_coins():
+    url = "https://api.coingecko.com/api/v3/search/trending"
     resp = requests.get(url)
-    print(f"Status Code: {resp.status_code}")
-    print(f"Response Snippet: {resp.text[:200]}")
+    coins = resp.json().get("coins", [])
+    return [coin["item"]["name"] for coin in coins]
 
+def fetch_fear_and_greed():
+    url = "https://api.alternative.me/fng/?limit=1&format=json"
+    resp = requests.get(url)
     data = resp.json()
-    updates = data.get("status_updates", [])[:5]
+    index = data.get("data", [{}])[0]
+    return f"{index.get('value_classification')} ({index.get('value')})"
 
-    if not updates:
-        return "No recent crypto news found."
-
-    headlines = []
-    for update in updates:
-        project = update.get("project", {}).get("name", "Unknown Project")
-        title = update.get("title", "").strip()
-        description = update.get("description", "").strip()
-        headlines.append(f"🔹 *{project}* – {title}\n{description}")
-
-    return "\n\n".join(headlines)
+def summon_openai_summary(trending, fear_greed):
+    openai.api_key = os.environ["OPENAI_API_KEY"]
+    prompt = (
+        f"Summarize the current crypto market in a brief daily update."
+        f" The Fear and Greed index is {fear_greed}."
+        f" Trending coins are: {', '.join(trending)}."
+        f" Respond in an informative, professional tone."
+    )
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=200
+    )
+    return response["choices"][0]["message"]["content"].strip()
 
 def send_telegram_message(message):
     token = os.environ["TELEGRAM_TOKEN"]
     chat_id = os.environ["TELEGRAM_CHAT_ID"]
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": message, "parse_mode": "Markdown"}
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
     requests.post(url, data=payload)
 
 def main():
     tz = pytz.timezone("Europe/Zurich")
     now = datetime.now(tz).strftime("%Y-%m-%d %H:%M")
-    news = get_crypto_news()
-    message = f"📰 *Daily Crypto News* – {now}\n\n{news}"
+    trending = fetch_trending_coins()
+    fear_greed = fetch_fear_and_greed()
+    summary = summon_openai_summary(trending, fear_greed)
+    message = f"📰 *Daily Crypto Summary* – {now}\n\n{summary}"
     send_telegram_message(message)
 
 if __name__ == "__main__":
