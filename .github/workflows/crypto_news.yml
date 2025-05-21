@@ -1,13 +1,14 @@
-name: Daily Crypto News
+name: Daily GPT Crypto News
 
 on:
   schedule:
     - cron: '0 8 * * *'  # 08:00 UTC = 10:00 Swiss time
-  workflow_dispatch:
+  workflow_dispatch:     # Allows manual run from GitHub UI
 
 jobs:
   send-news:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,11 +19,11 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: pip install requests pytz
+        run: pip install requests pytz openai
 
-      - name: Run crypto news bot
+      - name: Run GPT-powered crypto news bot
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CRYPTOPANIC_TOKEN: ${{ secrets.CRYPTOPANIC_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python crypto_news_bot.py
