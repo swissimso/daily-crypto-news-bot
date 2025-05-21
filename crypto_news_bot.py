@@ -6,13 +6,17 @@ import os
 def get_crypto_news():
     api_token = os.environ["CRYPTOPANIC_TOKEN"]
     url = f"https://cryptopanic.com/api/v1/posts/?auth_token={api_token}&public=true"
-    print(f"Fetching news from: {url}")  # Debug line
-    resp = requests.get(url)
-    print(f"Response status code: {resp.status_code}")  # Debug line
-    print(f"Response content: {resp.text[:200]}")  # Show first 200 characters
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; CryptoNewsBot/1.0; +https://github.com/yourusername)"
+    }
+    print(f"Fetching news from: {url}")
+    resp = requests.get(url, headers=headers)
+    print(f"Status Code: {resp.status_code}")
+    print(f"Response Snippet: {resp.text[:200]}")
     data = resp.json()
     headlines = [f"- {post['title']}" for post in data.get("results", [])[:5]]
     return "\n".join(headlines)
+
 
 
 def send_telegram_message(message):
